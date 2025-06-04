@@ -101,7 +101,7 @@ const LoginPage = () => {
         </div>
       </div>
       <div className="flex flex-col justify-center items-center p-6 sm:p-12">
-        <div className="hourglassBackground">
+        <div className=" hidden lg:flex item-center justify-center bg-base-200 p-12 hourglassBackground">
           <div className="hourglassContainer">
             <div className="hourglassCurves"></div>
             <div class="hourglassCapTop"></div>
