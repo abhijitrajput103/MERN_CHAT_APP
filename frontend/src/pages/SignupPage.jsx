@@ -121,7 +121,7 @@ const SignupPage = () => {
             </div>
             <div className="form-control">
               <ReCAPTCHA
-                sitekey="YOUR_RECAPTCHA_SITE_KEY"
+                sitekey="6Ld86VYrAAAAAGPDDoMLCOYwhS5JQjKowksm1G55"
                 onChange={onRecaptchaChange}
               />
             </div>
