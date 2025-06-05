@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 const MessageInput = () => {
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
+  const [isSending, setIsSending] = useState(false);
   const fileInputRef = useRef(null);
   const { sendMessage } = useChatStore();
 
@@ -30,7 +31,9 @@ const MessageInput = () => {
   const handleSendMessage = async (e) => { 
     e.preventDefault();
     if(!text.trim() && !imagePreview) return;
+    if(isSending) return; // Prevent multiple sends
 
+    setIsSending(true);
     try {
       await sendMessage({
         text:text.trim(),
@@ -43,6 +46,8 @@ const MessageInput = () => {
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       console.error("Failed to send message", error);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -76,6 +81,7 @@ const MessageInput = () => {
             placeholder="Type a message..."
             value={text}
             onChange={(e) => setText(e.target.value)}
+            disabled={isSending}
           />
           <input
             type="file"
@@ -83,12 +89,14 @@ const MessageInput = () => {
             className="hidden"
             ref={fileInputRef}
             onChange={handleImageChange}
+            disabled={isSending}
           />
           <button
             type="button"
             className={`btn btn-circle
                ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
             onClick={() => fileInputRef.current?.click()}
+            disabled={isSending}
           >
             <Image size={20} />
           </button>
@@ -96,7 +104,7 @@ const MessageInput = () => {
         <button
           type="submit"
           className="btn btn-sm btn-circle"
-          disabled={!text.trim() && !imagePreview}
+          disabled={!text.trim() && !imagePreview || isSending}
         >
           <Send size={22} />
         </button>

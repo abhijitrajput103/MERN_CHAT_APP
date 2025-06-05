@@ -4,6 +4,7 @@ import { Eye, EyeOff, Mail, MessageSquare, User, Lock, Loader2 } from "lucide-re
 import AuthImagePattern from "../components/AuthImagePattern";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const SignupPage = () => {
   const [showPassword, setShowpassword] = useState(false);
@@ -12,6 +13,7 @@ const SignupPage = () => {
     email: "",
     password: "",
     // confirmPassword: "",
+    recaptchaToken: ""
   });
   const { signup, isSigningUp } = useAuthStore();
 
@@ -21,14 +23,20 @@ const SignupPage = () => {
     if (!/\S+@\S+\.\S+/.test(formData.email)) return toast.error("Invalid email format");
     if (!formData.password) return toast.error("Password is required");
     if (formData.password.length < 6) return toast.error("Password must be at least 6 characters");
+    if (!formData.recaptchaToken) return toast.error("Please complete the reCAPTCHA");
 
     return true;
   };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const success = validateForm();
     if (success === true) signup(formData);
+  };
+
+  const onRecaptchaChange = (token) => {
+    setFormData(prev => ({ ...prev, recaptchaToken: token }));
   };
 
   return (
@@ -111,6 +119,12 @@ const SignupPage = () => {
                 </button>
               </div>
             </div>
+            <div className="form-control">
+              <ReCAPTCHA
+                sitekey="YOUR_RECAPTCHA_SITE_KEY"
+                onChange={onRecaptchaChange}
+              />
+            </div>
             <button type="submit" className="btn btn-primary w-full" disabled={isSigningUp}>
               {isSigningUp ? (
                 <>
@@ -139,9 +153,6 @@ const SignupPage = () => {
           subtitle="Connect with friends, share moments, and stay in touch with your loved ones"
         />
       </div>
-
-
-
     </div>
   )
 };

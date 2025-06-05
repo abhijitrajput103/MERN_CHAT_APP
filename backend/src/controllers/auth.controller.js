@@ -4,14 +4,28 @@ import { generateToken } from "../lib/utils.js";
 import cloudinary from "../lib/cloudinary.js";
 
 //Signup Controller
+import axios from "axios";
+
 export const signup = async (req, res) => {
-    const { fullname, email, password } = req.body;
+    const { fullname, email, password, recaptchaToken } = req.body;
     try {
         if (!fullname || !email || !password) {
             return res.status(400).json({ message: "Please fill in all fields" });
         }
         if (password.length < 6) {
             return res.status(400).json({ message: "Password must be at least 6 characters" });
+        }
+        if (!recaptchaToken) {
+            return res.status(400).json({ message: "reCAPTCHA token is missing" });
+        }
+
+        // Verify reCAPTCHA token with Google
+        const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+        const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaToken}`;
+
+        const response = await axios.post(verificationUrl);
+        if (!response.data.success) {
+            return res.status(400).json({ message: "Failed reCAPTCHA verification" });
         }
 
         const user = await User.findOne({ email });

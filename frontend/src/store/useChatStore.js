@@ -37,31 +37,45 @@ export const useChatStore = create((set, get) => ({
     },
 
     //Send Messages
-    sendMessage: async (messageData) => {
-        const { selectedUser } = get();
-        try {
-            await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
-            // Removed local append to avoid duplication; rely on socket event to update messages
-        } catch (error) {
-            toast.error(error.response.data.message);
-        }
-    },
-
-    subscribeToMessages: () => {
-        const { selectedUser } = get();
-        if (!selectedUser) return;
-
-        const socket = useAuthStore.getState().socket;
-
-
-        socket.on("newMessage", (newMessage) => {
-            const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
-            if (!isMessageSentFromSelectedUser) return;
-            set({
-                messages: [...get().messages, newMessage],
-            });
+sendMessage: async (messageData) => {
+    const { selectedUser } = get();
+    const authUser = useAuthStore.getState().authUser;
+    try {
+        const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
+        // Append sent message locally to improve UX
+        set({
+            messages: [...get().messages, res.data],
         });
-    },
+    } catch (error) {
+        toast.error(error.response.data.message);
+    }
+},
+
+subscribeToMessages: () => {
+    const { selectedUser } = get();
+    if (!selectedUser) return;
+
+    const socket = useAuthStore.getState().socket;
+    const authUser = useAuthStore.getState().authUser;
+
+    socket.on("newMessage", (newMessage) => {
+        // Check if the new message belongs to the current conversation
+        const isRelevantMessage =
+            (newMessage.senderId === selectedUser._id && newMessage.receiverId === authUser._id) ||
+            (newMessage.senderId === authUser._id && newMessage.receiverId === selectedUser._id);
+
+        if (!isRelevantMessage) return;
+
+        // Prevent duplicate messages by checking if message already exists
+        const existingMessages = get().messages;
+        const isDuplicate = existingMessages.some(msg => msg._id === newMessage._id);
+        if (isDuplicate) return;
+
+        set({
+            messages: [...existingMessages, newMessage],
+        });
+    });
+},
 
     unsubscribeFromMessages: () => {
         const socket = useAuthStore.getState().socket;
