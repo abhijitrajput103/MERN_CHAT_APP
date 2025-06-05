@@ -104,7 +104,7 @@ const LoginPage = () => {
         <div className=" hidden lg:flex item-center justify-center bg-base-200 p-12 hourglassBackground">
           <div className="hourglassContainer">
             <div className="hourglassCurves"></div>
-            <div class="hourglassCapTop"></div>
+            <div className="hourglassCapTop"></div>
             <div className="hourglassGlassTop"></div>
             <div className="hourglassSand"></div>
             <div className="hourglassSandStream"></div>
