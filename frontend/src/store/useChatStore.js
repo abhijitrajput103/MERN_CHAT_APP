@@ -38,10 +38,10 @@ export const useChatStore = create((set, get) => ({
 
     //Send Messages
     sendMessage: async (messageData) => {
-        const { selectedUser, messages } = get();
+        const { selectedUser } = get();
         try {
-            const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
-            set({ messages: [...messages, res.data] })
+            await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
+            // Removed local append to avoid duplication; rely on socket event to update messages
         } catch (error) {
             toast.error(error.response.data.message);
         }
